@@ -23,6 +23,11 @@ class Enrollment extends Model
         return $this->belongsTo(AcademicClass::class, 'class_id');
     }
 
+    public function class(): BelongsTo
+    {
+        return $this->belongsTo(AcademicClass::class, 'class_id');
+    }
+
     public function grade(): HasOne
     {
         return $this->hasOne(Grade::class);

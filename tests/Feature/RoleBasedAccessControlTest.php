@@ -9,6 +9,12 @@ test('guest is redirected to login from dashboard', function () {
 
 test('mahasiswa can access dashboard and khs but not admin or dosen pages', function () {
     $mahasiswa = User::factory()->create(['role' => 'Mahasiswa']);
+    \App\Models\Student::create([
+        'user_id' => $mahasiswa->id,
+        'nim' => '2201010001',
+        'angkatan' => '2022',
+        'status' => 'active',
+    ]);
 
     // Can access
     $this->actingAs($mahasiswa)->get('/dashboard')->assertOk();
