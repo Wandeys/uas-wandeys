@@ -12,6 +12,7 @@ use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\DosenKelasController;
 use App\Http\Controllers\KhsController;
+use App\Http\Controllers\GradeReportController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -31,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/show', [DashboardController::class, 'show'])->name('dashboard.show');
     Route::get('/dashboard/edit', [DashboardController::class, 'edit'])->name('dashboard.edit');
     Route::put('/dashboard/update', [DashboardController::class, 'update'])->name('dashboard.update');
+    Route::get('/kelas/{class}/download-pdf', [GradeReportController::class, 'downloadClassPdf'])->name('kelas.download_pdf');
 
     // Khusus Dosen (Didaftarkan sebelum resource /dosen agar rute spesifik tidak bertabrakan dengan wildcard {dosen})
     Route::middleware(['role:Dosen'])->group(function () {

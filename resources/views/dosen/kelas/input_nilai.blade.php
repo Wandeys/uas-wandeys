@@ -2,6 +2,18 @@
 
     <x-slot:title>{{ $title }}</x-slot:title>
 
+    @php
+        $chartGrades = ['A' => 0, 'A-' => 0, 'B+' => 0, 'B' => 0, 'B-' => 0, 'C+' => 0, 'C' => 0, 'D' => 0, 'E' => 0];
+        foreach ($enrollments as $e) {
+            if ($e->grade) {
+                $letter = $e->grade->grade_letter;
+                if (array_key_exists($letter, $chartGrades)) {
+                    $chartGrades[$letter]++;
+                }
+            }
+        }
+    @endphp
+
     <div class="row g-3 mb-3">
         <!-- Class Meta info -->
         <div class="col-md-4">
@@ -31,34 +43,44 @@
         </div>
 
         <!-- Class Weights info -->
-        <div class="col-md-8">
+        <div class="col-md-4">
             <div class="card shadow-lg p-3 h-100">
                 <h5 class="fw-bold border-bottom pb-2 text-primary">Bobot Penilaian</h5>
-                <div class="row text-center mt-2">
-                    <div class="col-3">
+                <div class="row g-2 text-center mt-2">
+                    <div class="col-6">
                         <div class="p-2 border rounded bg-light">
                             <div class="text-muted small">Presensi</div>
-                            <h4 class="fw-bold text-dark m-0">{{ (float) $class->weight_attendance }}%</h4>
+                            <h5 class="fw-bold text-dark m-0">{{ (float) $class->weight_attendance }}%</h5>
                         </div>
                     </div>
-                    <div class="col-3">
+                    <div class="col-6">
                         <div class="p-2 border rounded bg-light">
                             <div class="text-muted small">Tugas</div>
-                            <h4 class="fw-bold text-dark m-0">{{ (float) $class->weight_task }}%</h4>
+                            <h5 class="fw-bold text-dark m-0">{{ (float) $class->weight_task }}%</h5>
                         </div>
                     </div>
-                    <div class="col-3">
+                    <div class="col-6">
                         <div class="p-2 border rounded bg-light">
                             <div class="text-muted small">UTS</div>
-                            <h4 class="fw-bold text-dark m-0">{{ (float) $class->weight_uts }}%</h4>
+                            <h5 class="fw-bold text-dark m-0">{{ (float) $class->weight_uts }}%</h5>
                         </div>
                     </div>
-                    <div class="col-3">
+                    <div class="col-6">
                         <div class="p-2 border rounded bg-light">
                             <div class="text-muted small">UAS</div>
-                            <h4 class="fw-bold text-dark m-0">{{ (float) $class->weight_uas }}%</h4>
+                            <h5 class="fw-bold text-dark m-0">{{ (float) $class->weight_uas }}%</h5>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sebaran Nilai Chart -->
+        <div class="col-md-4">
+            <div class="card shadow-lg p-3 h-100">
+                <h5 class="fw-bold border-bottom pb-2 text-primary">Sebaran Nilai</h5>
+                <div style="height: 120px; position: relative;">
+                    <canvas id="classSebaranChart"></canvas>
                 </div>
             </div>
         </div>
@@ -147,9 +169,14 @@
             </div>
 
             <div class="d-flex justify-content-between align-items-center mt-3">
-                <a href="{{ route('dosen.kelas.index') }}" class="btn btn-warning">
-                    <i class="bi bi-arrow-left me-1"></i> Kembali
-                </a>
+                <div>
+                    <a href="{{ route('dosen.kelas.index') }}" class="btn btn-warning me-2">
+                        <i class="bi bi-arrow-left me-1"></i> Kembali
+                    </a>
+                    <a href="{{ route('kelas.download_pdf', $class->id) }}" class="btn btn-danger">
+                        <i class="bi bi-file-earmark-pdf-fill me-1"></i> Download PDF
+                    </a>
+                </div>
 
                 @if (!$isLocked && $enrollments->isNotEmpty())
                     <div>
@@ -197,6 +224,7 @@
     @endif
 
     @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             function recalculateRowGrade(row) {
                 let attendance = parseFloat(row.find('.score-attendance').val()) || 0;
@@ -231,6 +259,43 @@
 
             $('.weight-calc-input').on('input change', function() {
                 recalculateRowGrade($(this).closest('.grade-row'));
+            });
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const classCtx = document.getElementById('classSebaranChart').getContext('2d');
+                new Chart(classCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: {!! json_encode(array_keys($chartGrades)) !!},
+                        datasets: [{
+                            data: {!! json_encode(array_values($chartGrades)) !!},
+                            backgroundColor: 'rgba(0, 0, 128, 0.7)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
             });
         </script>
     @endpush

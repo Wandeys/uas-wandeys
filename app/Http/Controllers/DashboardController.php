@@ -11,15 +11,153 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        $user = Auth::user();
         $totalUsers = \App\Models\User::count();
         $superadminCount = \App\Models\User::where('role', 'Superadmin')->count();
         $adminCount = \App\Models\User::where('role', 'Admin')->count();
+
+        // Admin/Superadmin Analytics
+        $cohortIpkData = [];
+        $highestPassRates = [];
+        $lowestPassRates = [];
+        $activeStudentsCount = 0;
+        $activeTeachersCount = 0;
+        $averageInstitutionIpk = 0.00;
+        $currentClassesCount = 0;
+
+        if ($user->role === 'Superadmin' || $user->role === 'Admin') {
+            $activeStudentsCount = \App\Models\Student::where('status', 'active')->count();
+            $activeTeachersCount = \App\Models\Teacher::count();
+
+            // Rata-rata IPK institusi
+            $allStudents = \App\Models\Student::all();
+            $totalIpkSum = 0;
+            $studentsCount = 0;
+            foreach ($allStudents as $st) {
+                $totalIpkSum += $st->calculateIPK();
+                $studentsCount++;
+            }
+            $averageInstitutionIpk = $studentsCount > 0 ? round($totalIpkSum / $studentsCount, 2) : 0.00;
+
+            // Jumlah kelas berjalan
+            $activeYear = \App\Models\AcademicYear::where('is_active', true)->first();
+            $currentClassesCount = $activeYear 
+                ? \App\Models\AcademicClass::where('academic_year_id', $activeYear->id)->count() 
+                : 0;
+
+            // IPK per angkatan
+            $cohorts = \App\Models\Student::select('angkatan')->distinct()->pluck('angkatan')->toArray();
+            sort($cohorts);
+            foreach ($cohorts as $cohort) {
+                $students = \App\Models\Student::where('angkatan', $cohort)->get();
+                $totalIpk = 0;
+                $count = 0;
+                foreach ($students as $student) {
+                    $totalIpk += $student->calculateIPK();
+                    $count++;
+                }
+                $cohortIpkData[$cohort] = $count > 0 ? round($totalIpk / $count, 2) : 0.00;
+            }
+
+            // Kelulusan MK
+            $courses = \App\Models\Course::with('classes.enrollments.grade')->get();
+            $coursePassRates = [];
+            foreach ($courses as $course) {
+                $totalLocked = 0;
+                $totalPassed = 0;
+                foreach ($course->classes as $class) {
+                    foreach ($class->enrollments as $enrollment) {
+                        if ($enrollment->grade && $enrollment->grade->is_locked) {
+                            $totalLocked++;
+                            if ($enrollment->grade->quality_point > 0) {
+                                $totalPassed++;
+                            }
+                        }
+                    }
+                }
+                if ($totalLocked > 0) {
+                    $passRate = ($totalPassed / $totalLocked) * 100;
+                    $coursePassRates[] = [
+                        'code' => $course->code,
+                        'name' => $course->name,
+                        'pass_rate' => round($passRate, 2),
+                        'total_students' => $totalLocked,
+                    ];
+                }
+            }
+            
+            usort($coursePassRates, function($a, $b) {
+                return $b['pass_rate'] <=> $a['pass_rate'];
+            });
+            $highestPassRates = array_slice($coursePassRates, 0, 5);
+            $lowestPassRates = array_slice(array_reverse($coursePassRates), 0, 5);
+        }
+
+        // Dosen Analytics
+        $totalClasses = 0;
+        $totalEnrolledStudents = 0;
+        $dosenGradeCounts = [
+            'A' => 0, 'A-' => 0, 'B+' => 0, 'B' => 0, 'B-' => 0, 'C+' => 0, 'C' => 0, 'D' => 0, 'E' => 0
+        ];
+        if ($user->role === 'Dosen') {
+            $teacher = $user->teacher;
+            $dosenClasses = $teacher 
+                ? \App\Models\AcademicClass::where('teacher_id', $teacher->id)->with('enrollments.grade')->get()
+                : collect();
+            $totalClasses = $dosenClasses->count();
+            $totalEnrolledStudents = $dosenClasses->sum(function($c) {
+                return $c->enrollments->count();
+            });
+
+            foreach ($dosenClasses as $class) {
+                foreach ($class->enrollments as $enrollment) {
+                    if ($enrollment->grade && $enrollment->grade->is_locked) {
+                        $letter = $enrollment->grade->grade_letter;
+                        if (array_key_exists($letter, $dosenGradeCounts)) {
+                            $dosenGradeCounts[$letter]++;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Mahasiswa Analytics
+        $ipsTrend = [];
+        if ($user->role === 'Mahasiswa') {
+            $student = $user->student;
+            if ($student) {
+                $years = \App\Models\AcademicYear::whereHas('classes.enrollments', function($q) use ($student) {
+                    $q->where('student_id', $student->id)
+                      ->whereHas('grade', function($g) {
+                          $g->where('is_locked', true);
+                      });
+                })->orderBy('year', 'asc')->orderBy('semester', 'asc')->get();
+
+                foreach ($years as $year) {
+                    $ipsTrend[] = [
+                        'semester' => $year->year . ' (' . $year->semester . ')',
+                        'ips' => $student->calculateIPS($year->id),
+                    ];
+                }
+            }
+        }
 
         return view('dashboard.index', [
             'title' => 'Dashboard',
             'totalUsers' => $totalUsers,
             'superadminCount' => $superadminCount,
             'adminCount' => $adminCount,
+            'cohortIpkData' => $cohortIpkData,
+            'highestPassRates' => $highestPassRates,
+            'lowestPassRates' => $lowestPassRates,
+            'activeStudentsCount' => $activeStudentsCount,
+            'activeTeachersCount' => $activeTeachersCount,
+            'averageInstitutionIpk' => $averageInstitutionIpk,
+            'currentClassesCount' => $currentClassesCount,
+            'totalClasses' => $totalClasses,
+            'totalEnrolledStudents' => $totalEnrolledStudents,
+            'dosenGradeCounts' => $dosenGradeCounts,
+            'ipsTrend' => $ipsTrend,
         ]);
     }
 
