@@ -74,6 +74,8 @@
                             <option value="">Pilih Role</option>
                             <option value="Superadmin" @selected(old('role', $user->role) == 'Superadmin')>Superadmin</option>
                             <option value="Admin" @selected(old('role', $user->role) == 'Admin')>Admin</option>
+                            <option value="Dosen" @selected(old('role', $user->role) == 'Dosen')>Dosen</option>
+                            <option value="Mahasiswa" @selected(old('role', $user->role) == 'Mahasiswa')>Mahasiswa</option>
                         </select>
                         @error('role')
                             <div class="invalid-feedback">

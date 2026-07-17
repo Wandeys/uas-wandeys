@@ -29,6 +29,7 @@
     </div>
 
     <!-- Statistics Cards -->
+    @if (Auth::user()->role == 'Superadmin' || Auth::user()->role == 'Admin')
     <div class="row g-4 mb-4">
         <div class="col-md-4">
             <div class="card shadow-sm border-0 h-100">
@@ -96,6 +97,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <!-- Quick Actions -->
     <div class="card shadow-sm border-0 mb-4">
@@ -106,33 +108,62 @@
             </h5>
         </div>
         <div class="card-body">
-            <div class="row g-3 mt-2">
-                <div class="col-md-3">
-                    <a href="{{ route('user.index') }}" class="text-decoration-none">
-                        <div class="card border border-primary border-opacity-25 h-100 hover-shadow">
-                            <div class="card-body text-center mt-4">
-                                <i class='bx bx-user-plus fs-1 text-primary mb-2'></i>
-                                <h6 class="mb-0">Manage Users</h6>
+            <div class="row g-3 mt-2 justify-content-center">
+                @if (Auth::user()->role == 'Superadmin' || Auth::user()->role == 'Admin')
+                    <div class="col-md-3">
+                        <a href="{{ route('user.index') }}" class="text-decoration-none">
+                            <div class="card border border-primary border-opacity-25 h-100 hover-shadow">
+                                <div class="card-body text-center mt-4">
+                                    <i class='bx bx-user-plus fs-1 text-primary mb-2'></i>
+                                    <h6 class="mb-0">Manage Users</h6>
+                                </div>
                             </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-3">
-                    <a href="{{ route('setting.index') }}" class="text-decoration-none">
-                        <div class="card border border-success border-opacity-25 h-100 hover-shadow">
-                            <div class="card-body text-center mt-4"">
-                                <i class='bx bx-cog fs-1 text-success mb-2'></i>
-                                <h6 class=" mb-0">Settings</h6>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ route('setting.index') }}" class="text-decoration-none">
+                            <div class="card border border-success border-opacity-25 h-100 hover-shadow">
+                                <div class="card-body text-center mt-4">
+                                    <i class='bx bx-cog fs-1 text-success mb-2'></i>
+                                    <h6 class="mb-0">Settings</h6>
+                                </div>
                             </div>
-                        </div>
-                    </a>
-                </div>
+                        </a>
+                    </div>
+                @endif
+
+                @if (Auth::user()->role == 'Dosen')
+                    <div class="col-md-3">
+                        <a href="{{ route('dosen.kelas.index') }}" class="text-decoration-none">
+                            <div class="card border border-primary border-opacity-25 h-100 hover-shadow">
+                                <div class="card-body text-center mt-4">
+                                    <i class='bx bx-book-open fs-1 text-primary mb-2'></i>
+                                    <h6 class="mb-0">Kelas Saya</h6>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                @endif
+
+                @if (Auth::user()->role == 'Mahasiswa')
+                    <div class="col-md-3">
+                        <a href="{{ route('khs.index') }}" class="text-decoration-none">
+                            <div class="card border border-primary border-opacity-25 h-100 hover-shadow">
+                                <div class="card-body text-center mt-4">
+                                    <i class='bx bx-file fs-1 text-primary mb-2'></i>
+                                    <h6 class="mb-0">Kartu Hasil Studi</h6>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                @endif
+
                 <div class="col-md-3">
                     <a href="{{ route('dashboard.show') }}" class="text-decoration-none">
                         <div class="card border border-info border-opacity-25 h-100 hover-shadow">
-                            <div class="card-body text-center mt-4"">
+                            <div class="card-body text-center mt-4">
                                 <i class='bx bx-user-circle fs-1 text-info mb-2'></i>
-                                <h6 class=" mb-0">My Profile</h6>
+                                <h6 class="mb-0">My Profile</h6>
                             </div>
                         </div>
                     </a>
@@ -140,9 +171,9 @@
                 <div class="col-md-3">
                     <a href="{{ route('dashboard.edit') }}" class="text-decoration-none">
                         <div class="card border border-warning border-opacity-25 h-100 hover-shadow">
-                            <div class="card-body text-center mt-4"">
+                            <div class="card-body text-center mt-4">
                                 <i class='bx bx-edit fs-1 text-warning mb-2'></i>
-                                <h6 class=" mb-0">Edit Profile</h6>
+                                <h6 class="mb-0">Edit Profile</h6>
                             </div>
                         </div>
                     </a>

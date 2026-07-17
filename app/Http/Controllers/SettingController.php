@@ -16,7 +16,7 @@ class SettingController extends Controller
     {
         return view('setting.index', [
             'title' => 'Setting',
-            'setting' => Setting::first(),
+            'setting' => Setting::first() ?? view()->shared('setting'),
         ]);
     }
 

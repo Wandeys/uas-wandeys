@@ -4,7 +4,7 @@
 
     <div class="card shadow-lg p-3">
 
-        <form action="{{ route('setting.update', $setting) }}" method="post" enctype="multipart/form-data" class="form">
+        <form action="{{ route('setting.update', $setting->id ?? 1) }}" method="post" enctype="multipart/form-data" class="form">
             @csrf
             @method('put')
 

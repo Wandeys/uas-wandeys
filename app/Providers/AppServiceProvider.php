@@ -21,11 +21,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $setting = null;
         try {
             $setting = Setting::first();
-            View::share('setting', $setting);
         } catch (\Exception $e) {
-            // database tidak ditemukan
+            // database tidak ditemukan atau belum migrasi
         }
+
+        if (!$setting) {
+            $setting = new Setting([
+                'app_name' => 'SIMANA',
+                'copyright' => 'SIMANA © 2026',
+                'login_title' => 'Selamat Datang',
+                'keywords' => 'simana, akademik, nilai',
+                'description' => 'Sistem Manajemen Nilai Akademik',
+                'logo' => null,
+            ]);
+        }
+
+        View::share('setting', $setting);
     }
 }

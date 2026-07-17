@@ -276,24 +276,77 @@
                 </a>
             </li>
 
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('setting.*') ? '' : 'collapsed' }}"
-                    href="{{ route('setting.index') }}">
-                    <i class='bx bx-cog'></i>
-                    <span>Setting</span>
-                </a>
-            </li>
-
-            @if (Auth::user()->role == 'Superadmin')
+            {{-- Menus for Superadmin & Admin --}}
+            @if (Auth::user()->role == 'Superadmin' || Auth::user()->role == 'Admin')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('user.*') ? '' : 'collapsed' }}"
-                        href="{{ route('user.index') }}">
-                        <i class='bx bx-user-pin'></i>
-                        <span>User</span>
+                    <a class="nav-link {{ request()->routeIs('user.*', 'dosen.*', 'mahasiswa.*', 'matakuliah.*', 'tahun-akademik.*', 'kelas.*') ? '' : 'collapsed' }}" 
+                        data-bs-target="#master-nav" data-bs-toggle="collapse" href="#">
+                        <i class="bi bi-menu-button-wide"></i><span>Data Master</span><i class="bi bi-chevron-down ms-auto"></i>
+                    </a>
+                    <ul id="master-nav" class="nav-content collapse {{ request()->routeIs('user.*', 'dosen.*', 'mahasiswa.*', 'matakuliah.*', 'tahun-akademik.*', 'kelas.*') ? 'show' : '' }}" data-bs-parent="#sidebar-nav">
+                        <li>
+                            <a href="{{ route('user.index') }}" class="{{ request()->routeIs('user.*') ? 'active' : '' }}">
+                                <i class="bi bi-circle"></i><span>Data User</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('dosen.index') }}" class="{{ request()->routeIs('dosen.*') ? 'active' : '' }}">
+                                <i class="bi bi-circle"></i><span>Data Dosen</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('mahasiswa.index') }}" class="{{ request()->routeIs('mahasiswa.*') ? 'active' : '' }}">
+                                <i class="bi bi-circle"></i><span>Data Mahasiswa</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('matakuliah.index') }}" class="{{ request()->routeIs('matakuliah.*') ? 'active' : '' }}">
+                                <i class="bi bi-circle"></i><span>Data Mata Kuliah</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('tahun-akademik.index') }}" class="{{ request()->routeIs('tahun-akademik.*') ? 'active' : '' }}">
+                                <i class="bi bi-circle"></i><span>Data Tahun Akademik</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('kelas.index') }}" class="{{ request()->routeIs('kelas.*') ? 'active' : '' }}">
+                                <i class="bi bi-circle"></i><span>Data Kelas</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('setting.*') ? '' : 'collapsed' }}"
+                        href="{{ route('setting.index') }}">
+                        <i class='bx bx-cog'></i>
+                        <span>Setting</span>
                     </a>
                 </li>
             @endif
 
+            {{-- Menus for Dosen --}}
+            @if (Auth::user()->role == 'Dosen')
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('dosen.kelas.*') ? '' : 'collapsed' }}"
+                        href="{{ route('dosen.kelas.index') }}">
+                        <i class="bi bi-journal-text"></i>
+                        <span>Kelas Saya</span>
+                    </a>
+                </li>
+            @endif
+
+            {{-- Menus for Mahasiswa --}}
+            @if (Auth::user()->role == 'Mahasiswa')
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('khs.*') ? '' : 'collapsed' }}"
+                        href="{{ route('khs.index') }}">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <span>Kartu Hasil Studi (KHS)</span>
+                    </a>
+                </li>
+            @endif
 
         </ul>
 

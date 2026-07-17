@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $setting->app_name ?? 'App' }} | {{ $title ?? 'Login' }}</title>
+    <title>{{ $setting?->app_name ?? 'App' }} | {{ $title ?? 'Login' }}</title>
 
     <!-- Favicon -->
-    <link href="{{ $setting->logo ? asset('storage/' . $setting->logo) : asset('niceadmin/img/laravel.png') }}"
+    <link href="{{ ($setting?->logo) ? asset('storage/' . $setting->logo) : asset('niceadmin/img/laravel.png') }}"
         rel="icon">
 
     <!-- Tailwind CSS CDN -->
@@ -61,18 +61,18 @@
             <!-- Branding Content -->
             <div class="relative z-10 p-12 text-center text-white max-w-lg">
                 <div class="mb-8 flex justify-center">
-                    @if ($setting->logo)
+                    @if ($setting?->logo)
                         <img src="{{ asset('storage/' . $setting->logo) }}" alt="Logo" class="h-24 drop-shadow-2xl">
                     @else
                         <div
                             class="w-24 h-24 bg-white rounded-3xl flex items-center justify-center text-brand-600 font-bold text-4xl shadow-2xl">
-                            {{ substr($setting->app_name ?? 'A', 0, 1) }}
+                            {{ substr($setting?->app_name ?? 'A', 0, 1) }}
                         </div>
                     @endif
                 </div>
-                <h1 class="text-4xl font-extrabold tracking-tight mb-4">{{ $setting->app_name ?? 'Admin Panel' }}</h1>
+                <h1 class="text-4xl font-extrabold tracking-tight mb-4">{{ $setting?->app_name ?? 'Admin Panel' }}</h1>
                 <p class="text-brand-100 text-lg font-light leading-relaxed">
-                    {{ $setting->description ?? 'Welcome to our modern administrative dashboard. Log in to access your workspace and manage your system seamlessly.' }}
+                    {{ $setting?->description ?? 'Welcome to our modern administrative dashboard. Log in to access your workspace and manage your system seamlessly.' }}
                 </p>
             </div>
         </div>
@@ -83,21 +83,21 @@
 
             <!-- Mobile Logo (Visible only on small screens) -->
             <div class="absolute top-8 left-8 lg:hidden flex items-center gap-3">
-                @if ($setting->logo)
+                @if ($setting?->logo)
                     <img src="{{ asset('storage/' . $setting->logo) }}" alt="Logo" class="h-8">
                 @else
                     <div
                         class="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                        {{ substr($setting->app_name ?? 'A', 0, 1) }}
+                        {{ substr($setting?->app_name ?? 'A', 0, 1) }}
                     </div>
                 @endif
-                <span class="font-bold text-gray-800">{{ $setting->app_name }}</span>
+                <span class="font-bold text-gray-800">{{ $setting?->app_name ?? 'SIMANA' }}</span>
             </div>
 
             <div class="w-full max-w-md mt-10 lg:mt-0">
 
                 <div class="mb-10 text-left">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ $setting->login_title ?? 'Welcome Back' }} 👋
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ $setting?->login_title ?? 'Welcome Back' }} 👋
                     </h2>
                     <p class="text-gray-500">Please enter your credentials to continue.</p>
                 </div>
@@ -174,7 +174,7 @@
 
                     <div class="text-center mt-8">
                         <p class="text-xs text-gray-400 font-medium">
-                            {{ $setting->copyright ?? '© ' . date('Y') . ' All rights reserved.' }}
+                            {{ $setting?->copyright ?? '© ' . date('Y') . ' All rights reserved.' }}
                         </p>
                     </div>
                 </form>
