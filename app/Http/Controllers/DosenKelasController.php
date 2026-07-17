@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicClass;
 use App\Models\Enrollment;
 use App\Models\Grade;
+use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -163,6 +164,110 @@ class DosenKelasController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withError('Gagal memfinalisasi nilai: ' . $e->getMessage());
+        }
+    }
+
+    public function presensi($class, Request $request)
+    {
+        $classModel = AcademicClass::with(['course', 'academicYear'])->findOrFail($class);
+        $teacher = Auth::user()->teacher;
+
+        if (!$teacher || $classModel->teacher_id !== $teacher->id) {
+            abort(403, 'Anda tidak berhak mengelola kelas ini');
+        }
+
+        $enrollments = Enrollment::with(['student.user', 'grade'])
+            ->where('class_id', $classModel->id)
+            ->get();
+
+        $meetingNumber = (int) $request->query('meeting_number', 1);
+        if ($meetingNumber < 1 || $meetingNumber > 16) {
+            $meetingNumber = 1;
+        }
+
+        // Get saved attendances for this specific meeting
+        $attendances = Attendance::whereIn('enrollment_id', $enrollments->pluck('id'))
+            ->where('meeting_number', $meetingNumber)
+            ->get()
+            ->keyBy('enrollment_id');
+
+        $meetingDate = $attendances->first()?->date ?? now()->toDateString();
+
+        // Check if grades are locked
+        $isLocked = $enrollments->contains(function ($enrollment) {
+            return $enrollment->grade?->is_locked;
+        });
+
+        return view('dosen.kelas.presensi', [
+            'title' => 'Presensi Kelas - ' . $classModel->name,
+            'class' => $classModel,
+            'enrollments' => $enrollments,
+            'meetingNumber' => $meetingNumber,
+            'attendances' => $attendances,
+            'meetingDate' => $meetingDate,
+            'isLocked' => $isLocked,
+        ]);
+    }
+
+    public function simpanPresensi(Request $request, $class)
+    {
+        $classModel = AcademicClass::findOrFail($class);
+        $teacher = Auth::user()->teacher;
+
+        if (!$teacher || $classModel->teacher_id !== $teacher->id) {
+            abort(403, 'Anda tidak berhak mengelola kelas ini');
+        }
+
+        // Check if grades are locked
+        $hasLocked = Grade::whereIn('enrollment_id', Enrollment::where('class_id', $classModel->id)->pluck('id'))
+            ->where('is_locked', true)
+            ->exists();
+
+        if ($hasLocked) {
+            return back()->withError('Nilai kelas ini telah dikunci, presensi tidak dapat diubah kembali.');
+        }
+
+        $request->validate([
+            'meeting_number' => 'required|integer|min:1|max:16',
+            'date' => 'required|date',
+            'attendances' => 'required|array',
+            'attendances.*' => 'required|in:H,S,I,A',
+        ], [
+            'meeting_number.required' => 'Nomor pertemuan wajib diisi.',
+            'meeting_number.integer' => 'Nomor pertemuan harus berupa angka.',
+            'meeting_number.min' => 'Nomor pertemuan minimal 1.',
+            'meeting_number.max' => 'Nomor pertemuan maksimal 16.',
+            'date.required' => 'Tanggal pertemuan wajib diisi.',
+            'date.date' => 'Format tanggal pertemuan tidak valid.',
+            'attendances.required' => 'Data presensi mahasiswa wajib diisi.',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($request->attendances as $enrollmentId => $status) {
+                // Ensure enrollment belongs to this class
+                $enrollment = Enrollment::where('id', $enrollmentId)
+                    ->where('class_id', $classModel->id)
+                    ->firstOrFail();
+
+                Attendance::updateOrCreate(
+                    [
+                        'enrollment_id' => $enrollmentId,
+                        'meeting_number' => $request->meeting_number,
+                    ],
+                    [
+                        'status' => $status,
+                        'date' => $request->date,
+                    ]
+                );
+            }
+
+            DB::commit();
+            return back()->withSuccess('Presensi Pertemuan ' . $request->meeting_number . ' berhasil disimpan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withError('Gagal menyimpan presensi: ' . $e->getMessage());
         }
     }
 }

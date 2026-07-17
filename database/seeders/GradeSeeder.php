@@ -27,18 +27,14 @@ class GradeSeeder extends Seeder
         if ($draftClass) {
             $enrollments = Enrollment::where('class_id', $draftClass->id)->get();
             foreach ($enrollments as $enrollment) {
-                if (Grade::where('enrollment_id', $enrollment->id)->exists()) {
-                    continue;
+                $grade = Grade::firstOrNew(['enrollment_id' => $enrollment->id]);
+                if (!$grade->exists || $grade->score_attendance == 0) {
+                    $grade->score_attendance = rand(80, 100);
                 }
-
-                $grade = new Grade([
-                    'enrollment_id' => $enrollment->id,
-                    'score_attendance' => rand(80, 100),
-                    'score_task' => rand(70, 95),
-                    'score_uts' => rand(65, 90),
-                    'score_uas' => rand(70, 95),
-                    'is_locked' => false,
-                ]);
+                $grade->score_task = rand(70, 95);
+                $grade->score_uts = rand(65, 90);
+                $grade->score_uas = rand(70, 95);
+                $grade->is_locked = false;
                 $grade->calculateGrade($draftClass);
                 $grade->save();
             }
@@ -48,18 +44,14 @@ class GradeSeeder extends Seeder
         if ($lockedClass) {
             $enrollments = Enrollment::where('class_id', $lockedClass->id)->get();
             foreach ($enrollments as $enrollment) {
-                if (Grade::where('enrollment_id', $enrollment->id)->exists()) {
-                    continue;
+                $grade = Grade::firstOrNew(['enrollment_id' => $enrollment->id]);
+                if (!$grade->exists || $grade->score_attendance == 0) {
+                    $grade->score_attendance = rand(85, 100);
                 }
-
-                $grade = new Grade([
-                    'enrollment_id' => $enrollment->id,
-                    'score_attendance' => rand(85, 100),
-                    'score_task' => rand(75, 95),
-                    'score_uts' => rand(70, 90),
-                    'score_uas' => rand(75, 95),
-                    'is_locked' => true,
-                ]);
+                $grade->score_task = rand(75, 95);
+                $grade->score_uts = rand(70, 90);
+                $grade->score_uas = rand(75, 95);
+                $grade->is_locked = true;
                 $grade->calculateGrade($lockedClass);
                 $grade->save();
             }

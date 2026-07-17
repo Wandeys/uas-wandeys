@@ -40,6 +40,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/dosen/kelas/{class}/input-nilai', [DosenKelasController::class, 'inputNilai'])->name('dosen.kelas.input_nilai');
         Route::post('/dosen/kelas/{class}/simpan-nilai', [DosenKelasController::class, 'simpanNilai'])->name('dosen.kelas.simpan_nilai');
         Route::post('/dosen/kelas/{class}/lock-nilai', [DosenKelasController::class, 'lockNilai'])->name('dosen.kelas.lock_nilai');
+        Route::get('/dosen/kelas/{class}/presensi', [DosenKelasController::class, 'presensi'])->name('dosen.kelas.presensi');
+        Route::post('/dosen/kelas/{class}/presensi/simpan', [DosenKelasController::class, 'simpanPresensi'])->name('dosen.kelas.simpan_presensi');
     });
 
     // Khusus Mahasiswa (Didaftarkan sebelum resource /mahasiswa agar rute spesifik tidak bertabrakan dengan wildcard {mahasiswa})

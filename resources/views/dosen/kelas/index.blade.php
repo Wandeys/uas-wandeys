@@ -41,6 +41,9 @@
                                 @endif
                             </td>
                             <td>
+                                <a href="{{ route('dosen.kelas.presensi', $class->id) }}" class="btn btn-success btn-sm me-1">
+                                    <i class="bi bi-calendar-check me-1"></i> Presensi
+                                </a>
                                 <a href="{{ route('dosen.kelas.input_nilai', $class->id) }}" class="btn btn-primary btn-sm">
                                     <i class="bi bi-pencil-square me-1"></i> Input / Lihat Nilai
                                 </a>

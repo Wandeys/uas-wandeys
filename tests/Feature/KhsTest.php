@@ -110,6 +110,6 @@ test('mahasiswa can print their KHS', function () {
     $response = $this->actingAs($studentUser)->get("/khs/cetak?academic_year_id={$year->id}");
     $response->assertStatus(200);
     $response->assertSee('KARTU HASIL STUDI (KHS)');
-    $response->assertSee(e($studentUser->name));
+    $response->assertSee($studentUser->name);
     $response->assertSee($student->nim);
 });
