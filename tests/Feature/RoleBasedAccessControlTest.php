@@ -22,6 +22,11 @@ test('mahasiswa can access dashboard and khs but not admin or dosen pages', func
 
 test('dosen can access dashboard and kelas but not admin or student pages', function () {
     $dosen = User::factory()->create(['role' => 'Dosen']);
+    \App\Models\Teacher::create([
+        'user_id' => $dosen->id,
+        'nip' => '1234567890',
+        'nidn' => '12345678',
+    ]);
 
     // Can access
     $this->actingAs($dosen)->get('/dashboard')->assertOk();
