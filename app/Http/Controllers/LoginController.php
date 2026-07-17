@@ -79,7 +79,34 @@ class LoginController extends Controller
             'user_id' => 'required|exists:users,id',
         ]);
 
+        $currentUser = Auth::user();
+        
+        $isOriginalAdmin = ($currentUser->role === 'Admin' || $currentUser->role === 'Superadmin');
+        $hasSwitched = session()->has('original_user_id');
+
+        if (!$isOriginalAdmin && !$hasSwitched) {
+            abort(403, 'Anda tidak diizinkan mengganti user');
+        }
+
+        if (!$hasSwitched) {
+            session(['original_user_id' => $currentUser->id]);
+        }
+
+        if (session('original_user_id') == $request->user_id) {
+            session()->forget('original_user_id');
+        }
+
         Auth::loginUsingId($request->user_id);
+
+        \App\Models\AuditLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'SWITCH_USER',
+            'description' => 'Bertukar peran menjadi user ID: ' . $request->user_id . ' (' . Auth::user()->name . ')',
+            'payload_before' => null,
+            'payload_after' => null,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return to_route('dashboard.index')->withSuccess('User berhasil diganti');
     }

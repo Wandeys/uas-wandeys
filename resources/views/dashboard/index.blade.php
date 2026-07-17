@@ -32,7 +32,7 @@
     @if (Auth::user()->role == 'Superadmin' || Auth::user()->role == 'Admin')
         <!-- Institutional Statistics -->
         <div class="row g-4 mb-4">
-            <div class="col-md-3">
+            <div class="col-lg col-md-4 col-sm-6">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body p-3">
                         <div class="d-flex align-items-center justify-content-between">
@@ -47,7 +47,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-lg col-md-4 col-sm-6">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body p-3">
                         <div class="d-flex align-items-center justify-content-between">
@@ -62,7 +62,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-lg col-md-4 col-sm-6">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body p-3">
                         <div class="d-flex align-items-center justify-content-between">
@@ -77,7 +77,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-lg col-md-4 col-sm-6">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body p-3">
                         <div class="d-flex align-items-center justify-content-between">
@@ -89,6 +89,24 @@
                                 <i class="bi bi-journal-bookmark fs-4 text-warning"></i>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg col-md-4 col-sm-6">
+                <div class="card shadow-sm border-0 h-100" style="background-color: #e3f2fd;">
+                    <div class="card-body p-3 d-flex flex-column justify-content-between">
+                        <div>
+                            <p class="text-muted mb-1 small fw-bold" style="font-size: 0.75rem;">PERIODE AKTIF</p>
+                            @php $activeYear = \App\Models\AcademicYear::where('is_active', true)->first(); @endphp
+                            @if($activeYear)
+                                <span class="fw-bold text-dark small" style="font-size: 0.8rem;">{{ $activeYear->year }} ({{ $activeYear->semester }})</span>
+                            @else
+                                <span class="text-danger small">Belum aktif</span>
+                            @endif
+                        </div>
+                        <a href="{{ route('tahun-akademik.index') }}" class="btn btn-primary btn-xs btn-sm mt-2 py-0 px-2 fw-bold" style="font-size: 0.7rem;">
+                            <i class="bi bi-gear-fill"></i> Kelola
+                        </a>
                     </div>
                 </div>
             </div>
@@ -257,7 +275,7 @@
     <!-- Dosen Statistics & Charts -->
     @if (Auth::user()->role == 'Dosen')
         <div class="row g-4 mb-4">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center justify-content-between">
@@ -272,7 +290,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center justify-content-between">
@@ -283,6 +301,97 @@
                             <div class="bg-success bg-opacity-10 rounded-circle p-3">
                                 <i class='bx bx-group fs-2 text-success'></i>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p class="text-muted mb-1 small">Mahasiswa Bimbingan</p>
+                                <h2 class="fw-bold mb-0">{{ $mahasiswaBimbinganCount }}</h2>
+                            </div>
+                            <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                                <i class='bx bxs-user-detail fs-2 text-info'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <h6 class="mb-0 fw-bold text-primary"><i class="bi bi-calendar-event me-2"></i>Jadwal / Kelas Aktif Semester Ini</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                            <table class="table table-sm table-striped m-0 small align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Mata Kuliah</th>
+                                        <th>Kelas</th>
+                                        <th class="text-center">Mahasiswa</th>
+                                        <th class="text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($dosenClassesList as $class)
+                                        <tr>
+                                            <td><strong>{{ $class->course->name }}</strong><br><span class="text-muted font-monospace" style="font-size: 0.75rem;">{{ $class->course->code }}</span></td>
+                                            <td>{{ $class->name }}</td>
+                                            <td class="text-center">{{ $class->enrollments->count() }}</td>
+                                            <td class="text-center">
+                                                <a href="{{ route('dosen.kelas.presensi', $class->id) }}" class="btn btn-outline-primary btn-xs btn-sm py-0 px-2 fw-semibold" style="font-size: 0.7rem;">Presensi</a>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-3">Tidak ada kelas aktif untuk semester ini.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-bottom">
+                        <h6 class="mb-0 fw-bold text-warning"><i class="bi bi-pencil-square me-2"></i>Kelas Memerlukan Input Nilai</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                            <table class="table table-sm table-striped m-0 small align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Mata Kuliah</th>
+                                        <th>Kelas</th>
+                                        <th class="text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($pendingInputClasses as $class)
+                                        <tr>
+                                            <td><strong>{{ $class->course->name }}</strong><br><span class="text-muted font-monospace" style="font-size: 0.75rem;">{{ $class->course->code }}</span></td>
+                                            <td>{{ $class->name }}</td>
+                                            <td class="text-center">
+                                                <a href="{{ route('dosen.kelas.input_nilai', $class->id) }}" class="btn btn-warning btn-xs btn-sm py-0 px-2 fw-semibold" style="font-size: 0.7rem;">Input Nilai</a>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted py-3 text-success"><i class="bi bi-check-circle-fill"></i> Semua kelas sudah diinput/dikunci.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -303,6 +412,54 @@
 
     <!-- Mahasiswa Charts -->
     @if (Auth::user()->role == 'Mahasiswa')
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p class="text-muted mb-1 small fw-bold">SKS KUMULATIF</p>
+                                <h2 class="fw-bold mb-0 text-primary">{{ $mahasiswaSks }}</h2>
+                            </div>
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                                <i class='bx bx-book-bookmark fs-2 text-primary'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p class="text-muted mb-1 small fw-bold">IPK (INDEKS PRESTASI KUMULATIF)</p>
+                                <h2 class="fw-bold mb-0 text-success">{{ number_format($mahasiswaIpk, 2) }}</h2>
+                            </div>
+                            <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                                <i class='bx bx-award fs-2 text-success'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p class="text-muted mb-1 small fw-bold">IPS SEMESTER TERAKHIR</p>
+                                <h2 class="fw-bold mb-0 text-info">{{ number_format($mahasiswaIpsLast, 2) }}</h2>
+                            </div>
+                            <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                                <i class='bx bx-line-chart fs-2 text-info'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-white border-bottom">
                 <h6 class="mb-0 fw-bold"><i class="bi bi-activity me-2 text-primary"></i>Tren IPS (Indeks Prestasi Semester)</h6>

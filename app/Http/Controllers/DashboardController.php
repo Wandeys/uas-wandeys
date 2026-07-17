@@ -99,22 +99,49 @@ class DashboardController extends Controller
         $dosenGradeCounts = [
             'A' => 0, 'A-' => 0, 'B+' => 0, 'B' => 0, 'B-' => 0, 'C+' => 0, 'C' => 0, 'D' => 0, 'E' => 0
         ];
+        $dosenClassesList = collect();
+        $pendingInputClasses = collect();
+        $mahasiswaBimbinganCount = 0;
+
         if ($user->role === 'Dosen') {
             $teacher = $user->teacher;
-            $dosenClasses = $teacher 
-                ? \App\Models\AcademicClass::where('teacher_id', $teacher->id)->with('enrollments.grade')->get()
-                : collect();
-            $totalClasses = $dosenClasses->count();
-            $totalEnrolledStudents = $dosenClasses->sum(function($c) {
-                return $c->enrollments->count();
-            });
+            if ($teacher) {
+                $activeYear = \App\Models\AcademicYear::where('is_active', true)->first();
 
-            foreach ($dosenClasses as $class) {
-                foreach ($class->enrollments as $enrollment) {
-                    if ($enrollment->grade && $enrollment->grade->is_locked) {
-                        $letter = $enrollment->grade->grade_letter;
-                        if (array_key_exists($letter, $dosenGradeCounts)) {
-                            $dosenGradeCounts[$letter]++;
+                $dosenClasses = \App\Models\AcademicClass::where('teacher_id', $teacher->id)
+                    ->with(['course', 'academicYear', 'enrollments.grade'])
+                    ->latest()
+                    ->get();
+
+                $totalClasses = $dosenClasses->count();
+                $totalEnrolledStudents = $dosenClasses->sum(function($c) {
+                    return $c->enrollments->count();
+                });
+
+                $mahasiswaBimbinganCount = \App\Models\Enrollment::whereIn('class_id', $dosenClasses->pluck('id'))
+                    ->distinct('student_id')
+                    ->count('student_id');
+
+                $dosenClassesList = $activeYear
+                    ? $dosenClasses->where('academic_year_id', $activeYear->id)
+                    : collect();
+
+                foreach ($dosenClasses as $c) {
+                    $classLocked = $c->enrollments->contains(function ($e) {
+                        return $e->grade?->is_locked;
+                    });
+                    if (!$classLocked && $c->enrollments->count() > 0) {
+                        $pendingInputClasses->push($c);
+                    }
+                }
+
+                foreach ($dosenClasses as $class) {
+                    foreach ($class->enrollments as $enrollment) {
+                        if ($enrollment->grade && $enrollment->grade->is_locked) {
+                            $letter = $enrollment->grade->grade_letter;
+                            if (array_key_exists($letter, $dosenGradeCounts)) {
+                                $dosenGradeCounts[$letter]++;
+                            }
                         }
                     }
                 }
@@ -123,9 +150,16 @@ class DashboardController extends Controller
 
         // Mahasiswa Analytics
         $ipsTrend = [];
+        $mahasiswaIpk = 0.00;
+        $mahasiswaSks = 0;
+        $mahasiswaIpsLast = 0.00;
+
         if ($user->role === 'Mahasiswa') {
             $student = $user->student;
             if ($student) {
+                $mahasiswaIpk = $student->calculateIPK();
+                $mahasiswaSks = $student->calculateTotalSksLulus();
+
                 $years = \App\Models\AcademicYear::whereHas('classes.enrollments', function($q) use ($student) {
                     $q->where('student_id', $student->id)
                       ->whereHas('grade', function($g) {
@@ -134,10 +168,12 @@ class DashboardController extends Controller
                 })->orderBy('year', 'asc')->orderBy('semester', 'asc')->get();
 
                 foreach ($years as $year) {
+                    $ips = $student->calculateIPS($year->id);
                     $ipsTrend[] = [
                         'semester' => $year->year . ' (' . $year->semester . ')',
-                        'ips' => $student->calculateIPS($year->id),
+                        'ips' => $ips,
                     ];
+                    $mahasiswaIpsLast = $ips;
                 }
             }
         }
@@ -158,6 +194,12 @@ class DashboardController extends Controller
             'totalEnrolledStudents' => $totalEnrolledStudents,
             'dosenGradeCounts' => $dosenGradeCounts,
             'ipsTrend' => $ipsTrend,
+            'mahasiswaIpk' => $mahasiswaIpk,
+            'mahasiswaSks' => $mahasiswaSks,
+            'mahasiswaIpsLast' => $mahasiswaIpsLast,
+            'dosenClassesList' => $dosenClassesList,
+            'pendingInputClasses' => $pendingInputClasses,
+            'mahasiswaBimbinganCount' => $mahasiswaBimbinganCount,
         ]);
     }
 

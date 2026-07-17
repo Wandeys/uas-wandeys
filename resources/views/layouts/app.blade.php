@@ -191,16 +191,18 @@
             <i class="bi bi-list toggle-sidebar-btn"></i>
         </div><!-- End Logo -->
 
-        <form id="switch-user-form" action="{{ route('login.switch_user') }}" method="POST" class="w-100 mx-2">
-            @csrf
-            <select name="user_id" class="form-control select2-default" id="switch-user-select">
-                @foreach (\App\Models\User::all() as $u)
-                    <option value="{{ $u->id }}" {{ Auth::id() == $u->id ? 'selected' : '' }}>
-                        {{ $u->name }} ({{ $u->role }})
-                    </option>
-                @endforeach
-            </select>
-        </form>
+        @if (Auth::user()->role === 'Admin' || Auth::user()->role === 'Superadmin' || session()->has('original_user_id'))
+            <form id="switch-user-form" action="{{ route('login.switch_user') }}" method="POST" class="w-100 mx-2">
+                @csrf
+                <select name="user_id" class="form-control select2-default" id="switch-user-select">
+                    @foreach (\App\Models\User::all() as $u)
+                        <option value="{{ $u->id }}" {{ Auth::id() == $u->id ? 'selected' : '' }}>
+                            {{ $u->name }} ({{ $u->role }})
+                        </option>
+                    @endforeach
+                </select>
+            </form>
+        @endif
 
         <nav class="header-nav ms-auto">
             <ul class="d-flex align-items-center">
