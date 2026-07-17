@@ -14,6 +14,7 @@ use App\Http\Controllers\DosenKelasController;
 use App\Http\Controllers\KhsController;
 use App\Http\Controllers\GradeReportController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\AuditLogController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -64,5 +65,10 @@ Route::middleware('auth')->group(function () {
         
         Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
         Route::put('/setting/{setting}/update', [SettingController::class, 'update'])->name('setting.update');
+    });
+
+    // Khusus Superadmin
+    Route::middleware(['role:Superadmin'])->group(function () {
+        Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit_logs.index');
     });
 });

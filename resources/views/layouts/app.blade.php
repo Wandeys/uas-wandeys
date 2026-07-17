@@ -369,6 +369,16 @@
                         <span>Setting</span>
                     </a>
                 </li>
+
+                @if (Auth::user()->role == 'Superadmin')
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('audit_logs.*') ? '' : 'collapsed' }}"
+                            href="{{ route('audit_logs.index') }}">
+                            <i class="bi bi-journal-text"></i>
+                            <span>Audit Logs</span>
+                        </a>
+                    </li>
+                @endif
             @endif
 
             {{-- Menus for Dosen --}}

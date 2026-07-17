@@ -51,6 +51,17 @@ class LoginController extends Controller
             return to_route('dashboard.index')->withSuccess('Login berhasil');
         }
 
+        // Record failed login event to audit logs
+        \App\Models\AuditLog::create([
+            'user_id' => null,
+            'action' => 'LOGIN_FAILED',
+            'description' => 'Gagal login menggunakan email: ' . $request->email,
+            'payload_before' => null,
+            'payload_after' => ['email' => $request->email],
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         return back()->withError('Login gagal email atau password tidak benar')->onlyInput('email');
     }
 

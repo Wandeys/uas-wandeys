@@ -40,5 +40,12 @@ class AppServiceProvider extends ServiceProvider
         }
 
         View::share('setting', $setting);
+
+        // Register Observers for Audit Logging
+        \App\Models\Grade::observe(\App\Observers\GradeObserver::class);
+        \App\Models\User::observe(\App\Observers\UserObserver::class);
+        \App\Models\Course::observe(\App\Observers\AuditLogObserver::class);
+        \App\Models\AcademicClass::observe(\App\Observers\AuditLogObserver::class);
+        \App\Models\AcademicYear::observe(\App\Observers\AuditLogObserver::class);
     }
 }
