@@ -13,6 +13,7 @@ use App\Http\Controllers\ClassController;
 use App\Http\Controllers\DosenKelasController;
 use App\Http\Controllers\KhsController;
 use App\Http\Controllers\GradeReportController;
+use App\Http\Controllers\NotificationController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -33,6 +34,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/edit', [DashboardController::class, 'edit'])->name('dashboard.edit');
     Route::put('/dashboard/update', [DashboardController::class, 'update'])->name('dashboard.update');
     Route::get('/kelas/{class}/download-pdf', [GradeReportController::class, 'downloadClassPdf'])->name('kelas.download_pdf');
+    Route::get('/notifications/{id}/read', [NotificationController::class, 'read'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read_all');
 
     // Khusus Dosen (Didaftarkan sebelum resource /dosen agar rute spesifik tidak bertabrakan dengan wildcard {dosen})
     Route::middleware(['role:Dosen'])->group(function () {

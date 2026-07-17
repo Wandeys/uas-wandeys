@@ -205,6 +205,51 @@
         <nav class="header-nav ms-auto">
             <ul class="d-flex align-items-center">
 
+                <!-- Notification Nav -->
+                <li class="nav-item dropdown me-3" style="list-style-type: none;">
+                    <a class="nav-link nav-icon d-flex align-items-center position-relative" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-bell fs-4 text-white"></i>
+                        @if (Auth::user()->unreadNotifications->count() > 0)
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                {{ Auth::user()->unreadNotifications->count() }}
+                            </span>
+                        @endif
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications py-2" style="min-width: 320px; border: none; border-radius: 8px;">
+                        <li class="dropdown-header d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-white border-opacity-10">
+                            <span class="fw-bold text-white small">Notifikasi ({{ Auth::user()->unreadNotifications->count() }})</span>
+                            @if (Auth::user()->unreadNotifications->count() > 0)
+                                <form action="{{ route('notifications.read_all') }}" method="POST" class="m-0">
+                                    @csrf
+                                    <button type="submit" class="btn btn-link p-0 text-white-50 text-decoration-none fw-bold" style="font-size: 0.75rem;">Tandai semua dibaca</button>
+                                </form>
+                            @endif
+                        </li>
+
+                        <div class="notification-list" style="max-height: 280px; overflow-y: auto;">
+                            @forelse(Auth::user()->unreadNotifications->take(5) as $notification)
+                                <li>
+                                    <a class="dropdown-item d-flex flex-column align-items-start px-3 py-2 text-wrap border-bottom border-white border-opacity-10" href="{{ route('notifications.read', $notification->id) }}">
+                                        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                                            <span class="fw-bold text-white small">{{ $notification->data['title'] ?? 'Notifikasi' }}</span>
+                                            <span class="text-white-50" style="font-size: 0.7rem;">{{ $notification->created_at->diffForHumans() }}</span>
+                                        </div>
+                                        <p class="mb-0 text-white-50 small" style="line-height: 1.25;">{{ $notification->data['message'] }}</p>
+                                    </a>
+                                </li>
+                            @empty
+                                <li class="dropdown-item text-center text-white-50 py-3 small">Tidak ada notifikasi baru.</li>
+                            @endforelse
+                        </div>
+
+                        <li class="dropdown-footer text-center pt-2 px-3">
+                            <span class="text-white-50" style="font-size: 0.75rem;">Menampilkan 5 notifikasi terbaru</span>
+                        </li>
+                    </ul>
+                </li>
+                <!-- End Notification Nav -->
+
                 <li class="nav-item dropdown pe-3">
 
                     <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#"

@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             EnrollmentSeeder::class,
             AttendanceSeeder::class,
             GradeSeeder::class,
+            NotificationSeeder::class,
         ]);
     }
 }

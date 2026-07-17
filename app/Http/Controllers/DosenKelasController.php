@@ -131,9 +131,9 @@ class DosenKelasController extends Controller
         }
     }
 
-    public function lockNilai(Request $request, $class)
+    public function lockNilai($class)
     {
-        $classModel = AcademicClass::findOrFail($class);
+        $classModel = AcademicClass::with('course')->findOrFail($class);
         $teacher = Auth::user()->teacher;
 
         if (!$teacher || $classModel->teacher_id !== $teacher->id) {
@@ -143,7 +143,7 @@ class DosenKelasController extends Controller
         DB::beginTransaction();
 
         try {
-            $enrollments = Enrollment::where('class_id', $classModel->id)->get();
+            $enrollments = Enrollment::with('student.user')->where('class_id', $classModel->id)->get();
             foreach ($enrollments as $enrollment) {
                 $grade = Grade::firstOrNew(['enrollment_id' => $enrollment->id]);
 
@@ -157,6 +157,11 @@ class DosenKelasController extends Controller
 
                 $grade->is_locked = true;
                 $grade->save();
+
+                // Notify student
+                if ($enrollment->student && $enrollment->student->user) {
+                    $enrollment->student->user->notify(new \App\Notifications\GradeReleasedNotification($classModel));
+                }
             }
 
             DB::commit();
