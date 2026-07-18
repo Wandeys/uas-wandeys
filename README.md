@@ -1,117 +1,139 @@
-# Admin Template (Laravel 13 + Tailwind 4)
+# 🎓 Sistem Manajemen Nilai Akademik (SIMANA)
 
-A professional and modern administrative dashboard template built with **Laravel 13** and **Bootstrap 5 (NiceAdmin Template)**. This project provides a solid foundation for building robust back-office applications with built-in user management, settings, and profile features.
+SIMANA adalah platform manajemen nilai akademik terintegrasi yang dibangun menggunakan **Laravel 13.0**, **Tailwind CSS v4.0**, dan **Bootstrap 5 (NiceAdmin Template)** dengan database **SQLite**. Sistem ini dirancang untuk mengotomatisasi seluruh siklus manajemen nilai—mulai dari pengelolaan data master, plotting mata kuliah, pengisian komponen nilai oleh dosen dengan bobot dinamis, perhitungan otomatis nilai akhir, hingga penerbitan Kartu Hasil Studi (KHS) dan Transkrip Akademik Sementara untuk mahasiswa.
 
-## 🚀 Fitur Utama
+---
 
-- **Otentikasi & Keamanan**: Login, Logout, dan Middleware Role (Superadmin).
-- **Manajemen User**: CRUD (Create, Read, Update, Delete) data pengguna lengkap dengan foto profil (avatar).
-- **Manajemen Profil**: Halaman profil untuk setiap pengguna (Dashboard Show & Edit).
-- **Pengaturan Aplikasi**: Pengaturan nama aplikasi, logo, kata kunci, dan deskripsi SEO melalui dashboard.
-- **UI/UX Modern**: Menggunakan template NiceAdmin dengan integrasi:
-    - **DataTables**: Untuk tabel data yang interaktif.
-    - **SweetAlert2**: Untuk notifikasi yang cantik.
-    - **Select2**: Untuk dropdown yang lebih baik.
-    - **TinyMCE**: Untuk editor teks kaya.
-- **Ekspor Laporan**: Dukungan ekspor data ke format PDF (menggunakan `laravel-dompdf`).
-- **Lokalisasi**: Sudah dikonfigurasi menggunakan Bahasa Indonesia (`id`).
+## 🚀 Fitur Utama & Modul Sistem
 
-## 🎨 Kustomisasi Tema (Warna)
+Sistem ini menerapkan pembatasan hak akses berbasis peran (**Role-Based Access Control - RBAC**) untuk 4 jenis aktor:
 
-Template ini telah dimodifikasi agar warna tema utamanya sangat mudah diganti. Anda hanya perlu mengubah **CSS Variables** di satu tempat saja, dan seluruh elemen (Header, Footer, Tombol Primary, Sidebar Aktif, dll.) akan otomatis menyesuaikan.
+### 1. 🔑 Autentikasi & Switch User (Uji Coba)
+*   **Keamanan Ketat**: Form login aman menggunakan enkripsi kata sandi Bcrypt dan proteksi CSRF.
+*   **Switch User**: Fitur penukar peran langsung untuk Admin & Superadmin agar dapat beralih ke akun mahasiswa atau dosen secara instan tanpa perlu bolak-balik logout-login demi kemudahan uji coba.
+*   **Pengaturan Profil**: Edit profil dasar, ubah kata sandi, dan unggah foto profil (avatar).
+
+### 2. 📁 Modul Data Master (Superadmin & Admin)
+*   **Pengelolaan Pengguna**: CRUD akun pengguna beserta alokasi perannya.
+*   **Data Akademik**: CRUD data dosen, mahasiswa, mata kuliah, dan tahun akademik.
+*   **Manajemen Kelas**: Pembuatan kelas perkuliahan yang menghubungkan mata kuliah, dosen pengampu, tahun akademik aktif, serta konfigurasi bobot komponen nilai.
+
+### 3. 📝 Pengisian & Pengelolaan Nilai (Dosen)
+*   **Bobot Nilai Dinamis**: Mengatur bobot penilaian per kelas secara dinamis (Tugas, UTS, UAS, Presensi) dengan total bobot harus tepat 100%.
+*   **Input Nilai Kolektif**: Penginputan nilai mentah mahasiswa per kelas perkuliahan secara kolektif.
+*   **Kalkulasi Otomatis**: Sistem secara otomatis menghitung Nilai Akhir (skala 0-100) dan mengonversinya menjadi Nilai Huruf (A, A-, B+, B, dst.) dan Angka Mutu (4.0, 3.7, 3.3, 3.0, dst.).
+*   **Finalisasi & Kunci Nilai**: Mengunci nilai setelah selesai diinput agar permanen dan tidak dapat diubah kembali demi menjaga integritas data.
+
+### 4. 📊 Dashboard Analytics Per Peran
+*   **Superadmin**: Log Audit transaksi penting secara detail (perubahan nilai, update password, hapus user, dll.) dan statistik global.
+*   **Admin**: Statistik jumlah mahasiswa/dosen aktif, visualisasi ringkasan, dan status periode akademik.
+*   **Dosen**: Ringkasan kelas yang diampu, daftar mahasiswa bimbingan, dan bagan histogram distribusi nilai mahasiswa (A, B, C, D, E) untuk kelas terkait.
+*   **Mahasiswa**: Informasi metrik akademik (IPK, SKS Kumulatif, IPS Semester Berjalan) serta line chart tren perkembangan IPS antar semester.
+
+### 5. 📄 Rapor Akademik & KHS (Mahasiswa)
+*   **Kartu Hasil Studi (KHS)**: Melihat KHS per semester berjalan secara real-time.
+*   **Riwayat Transkrip**: Informasi lengkap transkrip akademik sementara.
+*   **Cetak & Ekspor PDF**: Cetak KHS atau unduh dalam format PDF resmi menggunakan `laravel-dompdf`.
+
+### 6. 📅 Presensi Kehadiran & Notifikasi
+*   **Presensi Kelas**: Input kehadiran mahasiswa per kelas oleh dosen. Kehadiran ini otomatis terintegrasi dan menyinkronkan nilai presensi ke dalam kalkulasi nilai akhir.
+*   **Notifikasi Real-time**: Mahasiswa secara otomatis menerima pemberitahuan/notifikasi sistem saat nilai suatu kelas perkuliahan telah difinalisasi (rilis) oleh dosen.
+
+---
+
+## 🎨 Kustomisasi Tema Warna
+
+Aplikasi ini menggunakan integrasi CSS Variables sehingga warna tema utama dapat diubah dengan sangat mudah di satu file:
 
 1. Buka file `resources/views/layouts/app.blade.php`.
-2. Cari bagian `<style>` di dalam tag `<head>`.
-3. Ubah kode Hex warna pada blok `:root`:
+2. Cari tag `<style>` di bagian `<head>` pada blok `:root`.
+3. Ubah nilai variabel CSS berikut sesuai keinginan Anda:
 
 ```css
 :root {
     /* ====== UBAH WARNA TEMA DI SINI ====== */
-    --theme-bg: #7c3aed;    /* Warna utama tema (contoh: Ungu/Biru) */
-    --theme-hover: #6d28d9; /* Warna lebih gelap untuk efek hover tombol/menu */
-    --theme-text: #ffffff;  /* Warna teks di atas warna utama */
-    
-    --main-bg: #f6f9ff;     /* Warna background utama halaman konten */
+    --theme-bg: #000080;     /* Warna latar header, footer, tombol utama, sidebar aktif */
+    --theme-hover: #020260;  /* Warna efek hover menu/tombol */
+    --theme-text: #ffffff;   /* Warna teks yang berada di atas warna tema */
+    --main-bg: #eeeeee;      /* Warna latar belakang utama halaman konten */
     /* ===================================== */
 }
 ```
-4. Simpan file, lalu muat ulang (refresh) halaman pada browser Anda.
 
-## 🔑 Kredensial Default
+---
 
-Setelah menjalankan seeder, Anda dapat login menggunakan akun berikut:
+## 🔑 Akun & Kredensial Default
 
-| Nama        | Email             | Password   | Role       |
-| ----------- | ----------------- | ---------- | ---------- |
-| Tamus Tahir | `tamus@gmail.com` | `password` | Superadmin |
-| Joh Doe     | `admin@gmail.com` | `password` | Admin      |
+Setelah menjalankan database seeder, Anda dapat masuk ke aplikasi menggunakan akun berikut (semua kata sandi adalah `password`):
+
+| Nama Pengguna | Surel (Email) | Peran (Role) | Keterangan |
+| :--- | :--- | :--- | :--- |
+| **Superadmin User** | `tamus@gmail.com` | Superadmin | Hak akses penuh termasuk Audit Logs |
+| **Tamus Tahir** | `tamuspustaka@gmail.com` | Superadmin | Akun Superadmin Alternatif |
+| **Joh Doe** | `admin@gmail.com` | Admin | Pengelolaan Data Master & Pengguna |
+| **Dosen Default** | `dosen@gmail.com` | Dosen | Pengampu kelas, input nilai & presensi |
+| **Mahasiswa Default** | `mahasiswa@gmail.com` | Mahasiswa | Mengakses KHS, riwayat IPK/IPS & cetak PDF |
+
+---
 
 ## 🛠️ Stack Teknologi
 
-- **Backend**: PHP 8.3 & Laravel 13.0
-- **Frontend**: Bootstrap 5
-- **Database**: SQLite (default)
-- **Library Penting**:
-    - `barryvdh/laravel-dompdf`
-    - `laravel/tinker`
-    - `pestphp/pest` (Testing)
+*   **Backend**: PHP ^8.3 & Laravel ^13.0
+*   **Frontend**: Tailwind CSS v4.0 & Bootstrap v5.3 (NiceAdmin Template)
+*   **Basis Data (Database)**: SQLite (file-based portable database)
+*   **Paket/Library Kunci**:
+    *   `barryvdh/laravel-dompdf` (Generasi dokumen PDF)
+    *   `pestphp/pest` & `pestphp/pest-plugin-laravel` (Testing framework)
+    *   `laravel/tinker` (Interactive REPL)
 
-## 💻 Instalasi Lokal
+---
 
-Ikuti langkah-langkah berikut untuk menjalankan proyek di mesin lokal Anda:
+## 💻 Instalasi & Menjalankan Proyek
 
-1. **Clone Repositori**:
+Pastikan Anda telah memasang **PHP >= 8.3**, **Composer**, dan **Node.js** di perangkat Anda. Ikuti langkah-langkah di bawah ini:
 
-    ```bash
-    git clone <repository-url>
-    cd admin-template
-    ```
+### 1. Klon Repositori & Masuk ke Folder
+```bash
+git clone <repository-url>
+cd uas-laravel
+```
 
-2. **Instal Dependensi PHP**:
+### 2. Jalankan Script Setup Otomatis
+Kami menyediakan script perintah composer terpadu untuk menginstal dependensi PHP, membuat file konfigurasi `.env`, men-generate key enkripsi, menginstal modul javascript, serta mem-build aset frontend:
+```bash
+composer run setup
+```
 
-    ```bash
-    composer install
-    ```
+### 3. Setup Basis Data
+Buat file SQLite database secara manual (atau otomatis jika menggunakan script di atas), lalu jalankan migrasi database beserta seeder data default:
+```bash
+# Membuat file database SQLite kosong
+touch database/database.sqlite
 
-3. **Instal Dependensi JavaScript**:
+# Menjalankan migrasi dan seeding data awal
+php artisan migrate:fresh --seed
+```
 
-    ```bash
-    npm install
-    ```
+### 4. Jalankan Server Pengembangan
+Jalankan server aplikasi secara lokal (menjalankan server Laravel, queue listener, dan Vite compiler sekaligus menggunakan utilitas Concurrently):
+```bash
+composer run dev
+```
+Buka browser Anda dan akses aplikasi di **`http://127.0.0.1:8000`** atau alamat port lokal yang tertera pada terminal.
 
-4. **Konfigurasi Lingkungan**:
-   Salin file `.env.example` menjadi `.env` dan generate key:
+---
 
-    ```bash
-    cp .env.example .env
-    php artisan key:generate
-    ```
+## 🧪 Menjalankan Unit & Feature Testing
 
-5. **Setup Database (SQLite)**:
-   Buat file database kosong dan jalankan migrasi beserta seeder:
+Aplikasi ini dilengkapi dengan pengujian menyeluruh (39 test cases & 144 assertions) untuk memvalidasi RBAC, pengelolaan nilai, presensi, audit logging, KHS, dan performa dashboard:
 
-    ```bash
-    touch database/database.sqlite
-    php artisan migrate --seed
-    ```
+Jalankan pengujian menggunakan Pest PHP dengan perintah:
+```bash
+composer run test
+```
 
-6. **Jalankan Aplikasi**:
-   Anda dapat menggunakan script setup yang sudah disediakan atau menjalankan server secara manual:
-
-    ```bash
-    # Menggunakan script internal
-    composer run dev
-
-    # ATAU menjalankan secara terpisah
-    php artisan serve
-    npm run dev
-    ```
-
-## 📝 Script Tambahan
-
-- `composer run setup`: Menjalankan instalasi lengkap (composer, npm, migrate, build).
-- `composer run test`: Menjalankan unit testing menggunakan Pest.
+---
 
 ## 📄 Lisensi
 
-Proyek ini bersifat open-source di bawah lisensi [MIT](https://opensource.org/licenses/MIT).
+Proyek ini dirilis di bawah lisensi [MIT](https://opensource.org/licenses/MIT).
