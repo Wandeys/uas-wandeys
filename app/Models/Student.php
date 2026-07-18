@@ -14,6 +14,8 @@ class Student extends Model
 
     protected $fillable = ['user_id', 'nim', 'angkatan', 'status'];
 
+    protected $with = ['user'];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -22,6 +24,14 @@ class Student extends Model
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class);
+    }
+
+    /**
+     * Get the student's email from the associated user.
+     */
+    public function getEmailAttribute(): ?string
+    {
+        return $this->user?->email;
     }
 
     /**
